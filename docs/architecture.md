@@ -38,6 +38,65 @@ This document explains how the modernized Example forecasting solution is organi
 - `data_quality/` contains placeholders for integrity checks (nulls, duplicates, business rules) that can be extended.
 - Scheduling scripts live in `config/` to cleanly separate operational automation from core logic.
 
+## Cost & Performance Monitoring
+
+The lab includes comprehensive monitoring capabilities for tracking warehouse performance and attributing costs:
+
+### Query Tagging Strategy
+
+All forecasting workloads are tagged with structured metadata for cost attribution:
+
+```sql
+WORKLOAD:{type}|PATH:{approach}
+```
+
+- **Workload Types**: `TRAINING`, `INFERENCE`, `DATA_PREP`
+- **Model Paths**: `ML_FUNCTIONS`, `SNOWPARK_XGBOOST`
+
+This enables granular cost analysis by workload type and forecasting approach.
+
+### Monitoring Components
+
+1. **SQL Monitoring Queries** (`sql/06_monitoring_queries.sql`):
+   - Warehouse utilization and load history (queuing detection)
+   - Cost attribution by query tag
+   - Query performance analysis
+   - Warehouse efficiency metrics (idle time)
+   - Forecasting workload insights
+   - Optional automated resource monitor examples
+
+2. **Streamlit in Snowflake Dashboard** (`streamlit/monitoring/`):
+   - Interactive visualizations of warehouse performance
+   - Real-time cost analytics with trend analysis
+   - Query performance drill-down
+   - Automated optimization recommendations
+   - Runs natively in Snowflake (no local setup required)
+
+3. **Cost Analysis** (`sql/05_cost_analysis.sql`):
+   - Pre-execution cost estimation using warehouse parameters
+   - Post-execution cost attribution using query tags
+   - Path comparison (ML Functions vs Snowpark XGBoost)
+
+### Warehouse Optimization Best Practices
+
+The lab implements several cost and performance optimization strategies:
+
+- **Auto-Suspend**: 60-second timeout to minimize idle compute costs
+- **Query Tags**: Automatic tagging for all workloads enables cost attribution
+- **Resource Monitors** (optional): Credit quotas with progressive alerts
+- **Warehouse Sizing**: Starts with Medium, scales based on actual performance needs
+- **Scheduled Tasks**: Optimized timing to avoid conflicts and minimize costs
+
+### Monitoring Workflow
+
+1. **Setup**: Query tags are automatically applied in all SQL scripts and Python procedures
+2. **Execution**: Workloads run with tags captured in `ACCOUNT_USAGE.QUERY_HISTORY`
+3. **Analysis**: Run monitoring queries or launch Streamlit dashboard
+4. **Optimization**: Apply recommendations from automated analysis
+5. **Iteration**: Continuously refine based on actual usage patterns
+
+See `docs/monitoring_guide.md` for detailed monitoring instructions and troubleshooting.
+
 ## Cleanup Strategy
 
-Cleanup SQL scripts drop tasks, stored procedures, feature store objects, model registry entries, and the cost helper objects. Always suspend tasks before dropping warehouses.
+Cleanup SQL scripts drop tasks, stored procedures, feature store objects, model registry entries, resource monitors, and cost helper objects. The cleanup script includes cost summary queries to review total lab expenses before removal. Always suspend tasks before dropping warehouses.

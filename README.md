@@ -64,15 +64,100 @@ This mirrors the guidance in the [Snowflake Snowpark setup documentation](https:
         -   `SFE_FORECAST_GLOBAL`: Uses the trained model for inference.
     -   *(Optional)*: Contains a commented-out section to create tasks to run training and forecasting on a schedule.
 
-### Cost Analysis and Cleanup
+### Cost Analysis and Monitoring
 
-6.  **`sql/05_cost_analysis.sql`**: (Optional) Demonstrates cost estimation examples using the cost estimator function. Does not require special ORGANIZATION_USAGE or ACCOUNT_USAGE privileges.
+6.  **`sql/05_cost_analysis.sql`**: Demonstrates cost estimation using the cost estimator function and provides examples of query tag-based cost attribution. The estimation queries work without special privileges; attribution queries require `ACCOUNT_USAGE` access.
 
-7.  **`sql/99_cleanup.sql`**: **Important!** Run this script to drop the `SNOWFLAKE_EXAMPLE` database and the `SFE_SP_WH` warehouse, removing all objects created during the lab.
+7.  **`sql/06_monitoring_queries.sql`**: Comprehensive monitoring queries for warehouse performance, cost attribution, query analysis, and efficiency metrics. Includes:
+    - Warehouse utilization and queuing detection
+    - Cost breakdown by workload type and model path
+    - Query performance analysis
+    - Warehouse efficiency metrics
+    - Forecasting-specific insights
+    - Optional resource monitor examples
+
+### Interactive Monitoring Dashboard (Streamlit in Snowflake)
+
+8.  **Streamlit Dashboard**: Deploy an interactive monitoring dashboard that runs natively in Snowflake:
+
+**Deployment Steps:**
+
+```sql
+-- 1. Upload the dashboard file to Snowflake stage
+-- Using Snowsight: Data > Databases > SNOWFLAKE_EXAMPLE > FORECASTING > Stages > SFE_STREAMLIT_STAGE
+-- Upload: streamlit/monitoring/SFE_MONITORING_DASHBOARD.py
+
+-- Or using SnowSQL:
+PUT file://./streamlit/monitoring/SFE_MONITORING_DASHBOARD.py 
+  @SNOWFLAKE_EXAMPLE.FORECASTING.SFE_STREAMLIT_STAGE 
+  AUTO_COMPRESS=FALSE OVERWRITE=TRUE;
+
+-- 2. Create the Streamlit app (run deploy_streamlit.sql or the command below)
+CREATE OR REPLACE STREAMLIT SNOWFLAKE_EXAMPLE.FORECASTING.SFE_MONITORING_DASHBOARD
+    ROOT_LOCATION = '@SNOWFLAKE_EXAMPLE.FORECASTING.SFE_STREAMLIT_STAGE'
+    MAIN_FILE = 'SFE_MONITORING_DASHBOARD.py'
+    QUERY_WAREHOUSE = 'SFE_SP_WH';
+
+-- 3. Get the dashboard URL
+SHOW STREAMLITS IN SCHEMA SNOWFLAKE_EXAMPLE.FORECASTING;
+```
+
+**Or access via Snowsight:** Projects → Streamlit → SFE_MONITORING_DASHBOARD
+
+The dashboard provides:
+- Warehouse performance metrics with queuing detection
+- Interactive cost analytics and trends by workload type
+- Query performance drill-down
+- Automated optimization recommendations
+
+**Benefits of Streamlit in Snowflake:**
+- No local Python environment needed
+- Uses your existing Snowflake authentication
+- Easy sharing with team members through roles
+- Runs on the warehouse you're already monitoring
+
+See `streamlit/monitoring/README.md` for detailed deployment instructions.
+
+### Cleanup
+
+9.  **`sql/99_cleanup.sql`**: **Important!** Run this script to drop the `SNOWFLAKE_EXAMPLE` database and the `SFE_SP_WH` warehouse, removing all objects created during the lab. The script includes cost summary queries to review total expenses before cleanup.
 
 ## Repository Layout
 
 -   `sql/`: Contains all the SQL scripts for the lab, organized by execution order.
 -   `python/`: Contains helper Python code for the Snowpark path, including the Conda setup requirements.
--   `docs/`: Additional documentation, including architecture.
+-   `streamlit/`: Interactive dashboards for monitoring and visualization.
+    -   `monitoring/`: Cost and performance monitoring dashboard with real-time analytics.
+-   `docs/`: Additional documentation, including architecture and monitoring guide.
+    -   `architecture.md`: System architecture and design overview
+    -   `monitoring_guide.md`: Comprehensive monitoring and optimization guide
 -   `data_quality/`: Placeholder for data quality checks.
+
+## Monitoring and Cost Optimization
+
+This lab includes enterprise-grade monitoring capabilities:
+
+### Query Tagging
+All forecasting workloads are automatically tagged for cost attribution:
+- `WORKLOAD:TRAINING|PATH:ML_FUNCTIONS` - Training with ML Functions
+- `WORKLOAD:INFERENCE|PATH:SNOWPARK_XGBOOST` - Inference with Snowpark
+- `WORKLOAD:DATA_PREP` - Data preparation tasks
+
+### Cost Attribution
+Track costs by:
+- Workload type (training vs inference vs data prep)
+- Model path (ML Functions vs Snowpark XGBoost)
+- Scheduled vs ad-hoc queries
+
+### Performance Monitoring
+- Warehouse utilization and queuing detection
+- Query performance analysis
+- Idle time tracking and optimization recommendations
+
+### Best Practices
+- **Warehouse Sizing**: Start with Medium, scale based on performance
+- **Auto-Suspend**: 60-second timeout minimizes idle costs
+- **Resource Monitors** (optional): Set credit quotas to prevent overruns
+- **Query Optimization**: Monitor and optimize slow/expensive queries
+
+For detailed monitoring instructions, see `docs/monitoring_guide.md`.

@@ -6,15 +6,26 @@
 CREATE DATABASE IF NOT EXISTS SNOWFLAKE_EXAMPLE;
 CREATE SCHEMA IF NOT EXISTS SNOWFLAKE_EXAMPLE.FORECASTING;
 
--- 2. Snowpark-optimized warehouse (use RESOURCE MONITORS as needed)
+-- 2. Snowpark-optimized warehouse with performance and cost optimization best practices
+-- Reference: https://docs.snowflake.com/en/user-guide/warehouses-overview
+-- Best Practices:
+--   - AUTO_SUSPEND = 60 seconds: Aggressive auto-suspend to minimize idle compute costs
+--   - AUTO_RESUME = TRUE: Automatically restart when queries are submitted
+--   - WAREHOUSE_SIZE = 'medium': Start small and scale up based on actual performance needs
+--   - For production: Consider multi-cluster warehouses for high-concurrency workloads
 CREATE WAREHOUSE IF NOT EXISTS SFE_SP_WH
     WAREHOUSE_SIZE = 'medium'
     WAREHOUSE_TYPE = 'SNOWPARK-OPTIMIZED'
     AUTO_SUSPEND = 60
-    AUTO_RESUME = TRUE;
+    AUTO_RESUME = TRUE
+    COMMENT = 'Forecasting workload warehouse: training, inference, and data preparation';
 
 -- 3. Model stage for artifacts
 CREATE STAGE IF NOT EXISTS SNOWFLAKE_EXAMPLE.FORECASTING.SFE_MODEL_STAGE;
+
+-- 3a. Streamlit stage for monitoring dashboard
+CREATE STAGE IF NOT EXISTS SNOWFLAKE_EXAMPLE.FORECASTING.SFE_STREAMLIT_STAGE
+    COMMENT = 'Stage for Streamlit monitoring dashboard files';
 
 -- 4. Cost parameter table (editable values)
 CREATE TABLE IF NOT EXISTS SNOWFLAKE_EXAMPLE.FORECASTING.SFE_COST_PARAMS (
@@ -50,3 +61,40 @@ $$;
 
 -- 6. Verification queries (commented; run manually when needed)
 -- SELECT SNOWFLAKE_EXAMPLE.FORECASTING.SFE_ESTIMATE_WH_COST(2, (SELECT PARAM_VALUE FROM SNOWFLAKE_EXAMPLE.FORECASTING.SFE_COST_PARAMS WHERE PARAM_NAME='SP_WH_LARGE_CREDITS_PER_HOUR'), (SELECT PARAM_VALUE FROM SNOWFLAKE_EXAMPLE.FORECASTING.SFE_COST_PARAMS WHERE PARAM_NAME='DOLLARS_PER_CREDIT'));
+
+-- 7. Query tagging setup
+-- Query tags enable cost attribution and workload analysis by labeling queries with metadata
+-- Reference: https://docs.snowflake.com/en/sql-reference/parameters#query-tag
+-- Format: WORKLOAD:{type}|PATH:{approach}
+-- Examples:
+--   ALTER SESSION SET QUERY_TAG = 'WORKLOAD:TRAINING|PATH:SNOWPARK_XGBOOST';
+--   ALTER SESSION SET QUERY_TAG = 'WORKLOAD:INFERENCE|PATH:ML_FUNCTIONS';
+--   ALTER SESSION SET QUERY_TAG = 'WORKLOAD:DATA_PREP';
+-- Query tags are automatically captured in ACCOUNT_USAGE.QUERY_HISTORY for cost analysis
+
+-- 8. Optional: Resource monitors for cost control
+-- Resource monitors prevent runaway costs by setting credit quotas on warehouses
+-- Uncomment and customize the following example to enable budget controls:
+/*
+CREATE RESOURCE MONITOR SFE_FORECASTING_MONITOR WITH
+    CREDIT_QUOTA = 100  -- Maximum credits per month
+    FREQUENCY = MONTHLY
+    START_TIMESTAMP = IMMEDIATELY
+    TRIGGERS
+        ON 75 PERCENT DO NOTIFY  -- Alert at 75% usage
+        ON 90 PERCENT DO SUSPEND  -- Suspend warehouse at 90% to prevent overages
+        ON 100 PERCENT DO SUSPEND_IMMEDIATE;  -- Hard stop at 100%
+
+ALTER WAREHOUSE SFE_SP_WH SET RESOURCE_MONITOR = SFE_FORECASTING_MONITOR;
+
+-- View resource monitor status
+-- SHOW RESOURCE MONITORS;
+*/
+
+-- 9. Warehouse permissions best practices
+-- Grant USAGE to data scientists/analysts for query execution
+-- Grant MONITOR for viewing warehouse metrics (no operational control)
+-- Grant OPERATE to administrators only for scaling/suspension control
+-- Example:
+-- GRANT USAGE ON WAREHOUSE SFE_SP_WH TO ROLE DATA_SCIENTIST;
+-- GRANT MONITOR ON WAREHOUSE SFE_SP_WH TO ROLE DATA_ANALYST;

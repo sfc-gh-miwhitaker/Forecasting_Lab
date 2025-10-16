@@ -46,6 +46,9 @@ def build_features(df):
     return df
 
 def main(session: Session) -> str:
+    # Set query tag for cost attribution
+    session.sql("ALTER SESSION SET QUERY_TAG = 'WORKLOAD:TRAINING|PATH:SNOWPARK_XGBOOST'").collect()
+    
     base_df = session.table('SNOWFLAKE_EXAMPLE.FORECASTING.FORECAST_INPUT_GLOBAL').filter(F.col('REGION') == 'Global')
     qualifying = base_df.group_by('ISRC').agg(F.count_distinct('WEEK_ENDING').alias('WEEK_COUNT')) \
         .filter(F.col('WEEK_COUNT') > 10).select('ISRC')
@@ -87,7 +90,10 @@ def main(session: Session) -> str:
         )
     except ImportError:
         pass
-
+    
+    # Reset query tag
+    session.sql("ALTER SESSION UNSET QUERY_TAG").collect()
+    
     return 'MODEL_SAVED'
 $$;
 
@@ -133,6 +139,8 @@ def build_features(df):
     return df
 
 def main(session: Session, REGION: str) -> str:
+    # Set query tag for cost attribution
+    session.sql("ALTER SESSION SET QUERY_TAG = 'WORKLOAD:INFERENCE|PATH:SNOWPARK_XGBOOST'").collect()
     session.sql('USE WAREHOUSE SFE_SP_WH').collect()
     session.file.get(f"{MODEL_STAGE}/{MODEL_FILE}", '/tmp', overwrite=True)
     model = joblib.load(f"/tmp/{MODEL_FILE}")
@@ -165,21 +173,28 @@ def main(session: Session, REGION: str) -> str:
     session.sql(f"CREATE OR REPLACE TABLE {OUTPUT_TABLE} LIKE {tmp_table} COPY GRANTS").collect()
     session.sql(f"TRUNCATE TABLE {OUTPUT_TABLE}").collect()
     session.sql(f"INSERT INTO {OUTPUT_TABLE} SELECT * FROM {tmp_table}").collect()
+    
+    # Reset query tag
+    session.sql("ALTER SESSION UNSET QUERY_TAG").collect()
+    
     return 'OK'
 $$;
 
 -- Optional: To schedule training and forecasting, uncomment the following section.
+-- Note: Query tags are set within the stored procedures themselves
 
 -- Scheduling tasks
 CREATE OR REPLACE TASK SNOWFLAKE_EXAMPLE.FORECASTING.SFE_TASK_TRAIN_GLOBAL
   WAREHOUSE = SFE_SP_WH
   SCHEDULE = 'USING CRON 0 2 * * 1 America/Los_Angeles'
+  COMMENT = 'Weekly model training (Sundays at 2 AM PT)'
 AS
   CALL SNOWFLAKE_EXAMPLE.FORECASTING.SFE_TRAIN_GLOBAL_MODEL();
 
 CREATE OR REPLACE TASK SNOWFLAKE_EXAMPLE.FORECASTING.SFE_TASK_FORECAST_GLOBAL
   WAREHOUSE = SFE_SP_WH
   SCHEDULE = 'USING CRON 0 3 * * * America/Los_Angeles'
+  COMMENT = 'Daily forecasting inference (3 AM PT)'
 AS
   CALL SNOWFLAKE_EXAMPLE.FORECASTING.SFE_FORECAST_GLOBAL('Global');
 

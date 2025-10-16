@@ -1,5 +1,8 @@
 -- Generates synthetic time-series data for the forecasting model example.
 
+-- Set query tag for cost attribution and workload monitoring
+ALTER SESSION SET QUERY_TAG = 'WORKLOAD:DATA_PREP';
+
 -- 1. Recreate the target table for forecast input data to ensure correct schema.
 DROP TABLE IF EXISTS SNOWFLAKE_EXAMPLE.FORECASTING.FORECAST_INPUT_GLOBAL;
 CREATE TABLE SNOWFLAKE_EXAMPLE.FORECASTING.FORECAST_INPUT_GLOBAL (
@@ -80,3 +83,6 @@ FROM (
 
 -- 3. Verify the data
 -- SELECT * FROM SNOWFLAKE_EXAMPLE.FORECASTING.FORECAST_INPUT_GLOBAL WHERE REGION = 'Global' LIMIT 10;
+
+-- Reset query tag
+ALTER SESSION UNSET QUERY_TAG;
