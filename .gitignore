@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Snowflake credentials (IMPORTANT!)
+connections.toml
+.snowflake/
+*.pem
+*.key
+
+# Cursor internal notes (DO NOT COMMIT)
+.cursornotes/
+
+# Temporary files
+*.tmp
+*.log
+.cache/
+

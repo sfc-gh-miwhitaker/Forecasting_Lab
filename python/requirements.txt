@@ -1,0 +1,6 @@
+snowflake-snowpark-python
+snowflake-ml-python
+scikit-learn
+joblib
+numpy
+pandas
