@@ -1,3 +1,38 @@
+/*******************************************************************************
+ * DEMO PROJECT: Forecasting Lab
+ * Script: Cleanup - Complete Teardown
+ * 
+ * ⚠️  NOT FOR PRODUCTION USE - EXAMPLE IMPLEMENTATION ONLY
+ * 
+ * PURPOSE:
+ *   Comprehensive cleanup script that removes ALL demo objects created
+ *   during the lab. Includes cost summary queries for final expense review
+ *   before deletion.
+ * 
+ * OBJECTS DROPPED:
+ *   - SNOWFLAKE_EXAMPLE database (CASCADE - all schemas, tables, procedures)
+ *   - SFE_SP_WH warehouse
+ *   - SFE_MONITORING_DASHBOARD Streamlit app
+ *   - Optional: SFE_FORECASTING_MONITOR resource monitor
+ *   - Optional: Scheduled tasks (SFE_TASK_*)
+ * 
+ * COST REVIEW:
+ *   Step 1 includes queries to review total credit consumption and
+ *   workload-level costs before cleanup executes.
+ * 
+ * PREREQUISITES:
+ *   - ACCOUNTADMIN role or ownership of objects
+ *   - IMPORTED PRIVILEGES on SNOWFLAKE database (for cost queries)
+ * 
+ * WARNING:
+ *   This script is DESTRUCTIVE and IRREVERSIBLE. All forecasting data,
+ *   models, and configurations will be permanently deleted.
+ * 
+ * VERIFICATION:
+ *   After cleanup, run: SHOW DATABASES LIKE 'SNOWFLAKE_EXAMPLE';
+ *   Expected result: No rows returned
+ ******************************************************************************/
+
 -- Cleanup script for Example forecasting modernization
 -- Drops the database, warehouse, and optional resource monitors to remove all lab-related objects.
 

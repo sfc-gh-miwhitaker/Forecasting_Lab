@@ -1,6 +1,54 @@
+/*******************************************************************************
+ * DEMO PROJECT: Forecasting Lab
+ * Script: Setup - Database, Schema, and Warehouse Creation
+ * 
+ * ⚠️  NOT FOR PRODUCTION USE - EXAMPLE IMPLEMENTATION ONLY
+ * 
+ * PURPOSE:
+ *   Creates SNOWFLAKE_EXAMPLE database, FORECASTING schema, and SFE_SP_WH
+ *   Snowpark-optimized warehouse. Sets up cost estimation functions and
+ *   query tagging infrastructure for both ML Functions and Snowpark paths.
+ * 
+ * OBJECTS CREATED:
+ *   - SNOWFLAKE_EXAMPLE (Database)
+ *   - SNOWFLAKE_EXAMPLE.FORECASTING (Schema)
+ *   - SFE_SP_WH (Warehouse - Snowpark-Optimized MEDIUM)
+ *   - SFE_MODEL_STAGE (Stage for XGBoost artifacts)
+ *   - SFE_STREAMLIT_STAGE (Stage for dashboard files)
+ *   - SFE_COST_PARAMS (Table for cost calculation parameters)
+ *   - SFE_ESTIMATE_WH_COST (Function for cost estimation)
+ * 
+ * PREREQUISITES:
+ *   - ACCOUNTADMIN role or CREATE DATABASE/WAREHOUSE privileges
+ * 
+ * CLEANUP:
+ *   See sql/99_cleanup/99_cleanup.sql
+ ******************************************************************************/
+
 -- Snowflake setup script for Example Forecasting modernization
 -- Creates database, schema, Snowpark-optimized warehouse, model stage, cost parameter table, and estimator functions.
 -- Run inside Snowflake with appropriate privileges (ACCOUNTADMIN or delegated role).
+
+-- ============================================================================
+-- EXPIRATION CHECK
+-- ============================================================================
+-- This demo expires on 2025-12-24 (30 days from creation)
+-- After expiration, this repository will be archived and made private
+
+SELECT CASE
+    WHEN CURRENT_DATE() > '2025-12-24'::DATE THEN
+        ERROR('⚠️  DEMO EXPIRED: This demonstration project expired on 2025-12-24. ' ||
+              'This code uses Snowflake features current as of November 2025. ' ||
+              'Please check for updated versions or contact SE Community for current demos.')
+    WHEN CURRENT_DATE() > DATEADD(day, -7, '2025-12-24'::DATE) THEN
+        'WARNING: This demo will expire in ' || DATEDIFF(day, CURRENT_DATE(), '2025-12-24'::DATE) || ' days (on 2025-12-24)'
+    ELSE
+        'Demo is active. Expires: 2025-12-24'
+END AS expiration_status;
+
+-- ============================================================================
+-- SETUP: Database and Schema
+-- ============================================================================
 
 -- 1. Database and schema
 CREATE DATABASE IF NOT EXISTS SNOWFLAKE_EXAMPLE;

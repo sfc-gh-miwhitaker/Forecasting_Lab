@@ -1,0 +1,125 @@
+name: Demo Expiration Check
+
+on:
+  schedule:
+    # Run daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  check-expiration:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check if demo has expired
+        id: check
+        run: |
+          # Expiration date: 2025-12-24
+          EXPIRATION_DATE="2025-12-24"
+          CURRENT_DATE=$(date +%Y-%m-%d)
+          
+          echo "Current date: $CURRENT_DATE"
+          echo "Expiration date: $EXPIRATION_DATE"
+          
+          # Convert dates to seconds since epoch for comparison
+          CURRENT_EPOCH=$(date -d "$CURRENT_DATE" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$CURRENT_DATE" +%s)
+          EXPIRATION_EPOCH=$(date -d "$EXPIRATION_DATE" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$EXPIRATION_DATE" +%s)
+          
+          if [ "$CURRENT_EPOCH" -ge "$EXPIRATION_EPOCH" ]; then
+            echo "expired=true" >> $GITHUB_OUTPUT
+            echo "Demo has expired!"
+          else
+            echo "expired=false" >> $GITHUB_OUTPUT
+            DAYS_REMAINING=$(( ($EXPIRATION_EPOCH - $CURRENT_EPOCH) / 86400 ))
+            echo "Demo is still active. Days remaining: $DAYS_REMAINING"
+          fi
+
+      - name: Archive repository (if expired)
+        if: steps.check.outputs.expired == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Archiving repository due to expiration..."
+          
+          # Archive the repository using GitHub CLI
+          gh repo archive ${{ github.repository }} --yes
+          
+          echo "Repository archived successfully."
+
+      - name: Notify about upcoming expiration (7 days warning)
+        if: steps.check.outputs.expired == 'false'
+        run: |
+          EXPIRATION_DATE="2025-12-24"
+          WARNING_DATE="2025-12-17"  # 7 days before expiration
+          CURRENT_DATE=$(date +%Y-%m-%d)
+          
+          CURRENT_EPOCH=$(date -d "$CURRENT_DATE" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$CURRENT_DATE" +%s)
+          WARNING_EPOCH=$(date -d "$WARNING_DATE" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$WARNING_DATE" +%s)
+          
+          if [ "$CURRENT_EPOCH" -ge "$WARNING_EPOCH" ]; then
+            DAYS_REMAINING=$(( ($(date -d "$EXPIRATION_DATE" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$EXPIRATION_DATE" +%s) - $CURRENT_EPOCH) / 86400 ))
+            echo "⚠️ WARNING: This demo will expire in $DAYS_REMAINING days!"
+            echo "Expiration date: $EXPIRATION_DATE"
+          fi
+
+      - name: Create expiration issue (if approaching expiration)
+        if: steps.check.outputs.expired == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EXPIRATION_DATE="2025-12-24"
+          WARNING_DATE="2025-12-17"
+          CURRENT_DATE=$(date +%Y-%m-%d)
+          
+          CURRENT_EPOCH=$(date -d "$CURRENT_DATE" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$CURRENT_DATE" +%s)
+          WARNING_EPOCH=$(date -d "$WARNING_DATE" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$WARNING_DATE" +%s)
+          
+          if [ "$CURRENT_EPOCH" -ge "$WARNING_EPOCH" ]; then
+            DAYS_REMAINING=$(( ($(date -d "$EXPIRATION_DATE" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$EXPIRATION_DATE" +%s) - $CURRENT_EPOCH) / 86400 ))
+            
+            # Check if issue already exists
+            ISSUE_COUNT=$(gh issue list --label "demo-expiration" --state open --json number --jq 'length')
+            
+            if [ "$ISSUE_COUNT" -eq 0 ]; then
+              gh issue create \
+                --title "Demo Expiration Warning: $DAYS_REMAINING days remaining" \
+                --body "⚠️ **This demonstration project will expire on $EXPIRATION_DATE**
+
+**Days Remaining:** $DAYS_REMAINING
+
+## What happens on expiration?
+- The repository will be automatically archived
+- The repository will be made private
+- No further commits or changes will be possible
+
+## Actions to take:
+- [ ] Review if the demo should be extended
+- [ ] Update the expiration date in README.md if extending
+- [ ] Update the EXPIRATION_DATE in .github/workflows/expire-demo.yml
+- [ ] Or, allow the demo to expire as planned
+
+## Extending the expiration
+If you need to extend this demo:
+1. Update the expiration badge in README.md
+2. Update the EXPIRATION_DATE in .github/workflows/expire-demo.yml
+3. Update the expiration check in sql/01_setup/00_setup.sql
+4. Commit with message: 'chore: extend demo expiration to YYYY-MM-DD'
+
+---
+*This issue was automatically created by the demo expiration workflow.*" \
+                --label "demo-expiration" \
+                --label "maintenance"
+              
+              echo "Expiration warning issue created."
+            else
+              echo "Expiration warning issue already exists. Skipping creation."
+            fi
+          fi
+
+
+

@@ -1,3 +1,32 @@
+/*******************************************************************************
+ * DEMO PROJECT: Forecasting Lab
+ * Script: Path 1 - Native ML Functions Forecasting
+ * 
+ * ⚠️  NOT FOR PRODUCTION USE - EXAMPLE IMPLEMENTATION ONLY
+ * 
+ * PURPOSE:
+ *   Trains a time-series forecasting model using Snowflake's native
+ *   SNOWFLAKE.ML.FORECAST function and generates 12-week forecasts.
+ *   Pure SQL approach with no external dependencies.
+ * 
+ * OBJECTS CREATED:
+ *   - SFE_GLOBAL_FORECAST_MODEL (ML.FORECAST model)
+ *   - FORECAST_OUTPUT_GLOBAL_ML (Table - forecast results)
+ *   - SFE_TASK_FORECAST_ML (Optional task for daily refresh)
+ * 
+ * QUERY TAGS:
+ *   - WORKLOAD:TRAINING|PATH:ML_FUNCTIONS (model creation)
+ *   - WORKLOAD:INFERENCE|PATH:ML_FUNCTIONS (forecast generation)
+ * 
+ * PREREQUISITES:
+ *   - sql/01_setup/00_setup.sql completed
+ *   - sql/02_transformations/01_synthetic_data.sql completed
+ *   - FORECAST_INPUT_GLOBAL table populated
+ * 
+ * CLEANUP:
+ *   See sql/99_cleanup/99_cleanup.sql
+ ******************************************************************************/
+
 -- SNOWFLAKE.ML.FORECAST path for Example forecasting modernization
 -- Docs: https://docs.snowflake.com/en/user-guide/ml-functions/forecasting
 

@@ -1,3 +1,32 @@
+/*******************************************************************************
+ * DEMO PROJECT: Forecasting Lab
+ * Script: Cost Analysis - Estimation and Attribution
+ * 
+ * ⚠️  NOT FOR PRODUCTION USE - EXAMPLE IMPLEMENTATION ONLY
+ * 
+ * PURPOSE:
+ *   Demonstrates pre-execution cost estimation using warehouse parameters
+ *   and post-execution cost attribution using query tags. No special
+ *   privileges required for estimation queries.
+ * 
+ * SECTIONS:
+ *   1. Cost Estimation Functions (no privileges needed)
+ *   2. Query Tag-Based Cost Attribution (requires ACCOUNT_USAGE access)
+ *   3. Path Comparison (ML Functions vs Snowpark XGBoost)
+ * 
+ * PREREQUISITES:
+ *   - sql/01_setup/00_setup.sql completed (cost functions created)
+ *   - Optionally: Workloads executed with query tags
+ *   - For attribution: IMPORTED PRIVILEGES on SNOWFLAKE database
+ * 
+ * SEE ALSO:
+ *   - sql/04_monitoring/06_monitoring_queries.sql (comprehensive monitoring)
+ *   - docs/03-COST-COMPARISON.md (detailed analysis)
+ * 
+ * CLEANUP:
+ *   See sql/99_cleanup/99_cleanup.sql
+ ******************************************************************************/
+
 -- Cost estimation and analysis for Example forecasting workloads.
 -- This script demonstrates cost estimation (no special privileges required)
 -- and links to comprehensive monitoring queries in 06_monitoring_queries.sql.

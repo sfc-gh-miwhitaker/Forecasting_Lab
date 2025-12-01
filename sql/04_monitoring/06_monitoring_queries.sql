@@ -1,3 +1,40 @@
+/*******************************************************************************
+ * DEMO PROJECT: Forecasting Lab
+ * Script: Monitoring - Warehouse Performance and Cost Metrics
+ * 
+ * ⚠️  NOT FOR PRODUCTION USE - EXAMPLE IMPLEMENTATION ONLY
+ * 
+ * PURPOSE:
+ *   Comprehensive monitoring queries for tracking warehouse utilization,
+ *   query performance, cost attribution, and efficiency metrics. Uses
+ *   ACCOUNT_USAGE views for historical analysis.
+ * 
+ * SECTIONS:
+ *   1. Warehouse Performance (utilization, queuing detection)
+ *   2. Cost Attribution by Query Tag (workload type, model path)
+ *   3. Query Performance Analysis (slow queries, spillage detection)
+ *   4. Warehouse Efficiency Metrics (idle time, compute efficiency)
+ *   5. Forecasting-Specific Insights (training vs inference costs)
+ *   6. Resource Monitor Examples (optional budget controls)
+ * 
+ * PREREQUISITES:
+ *   - IMPORTED PRIVILEGES on SNOWFLAKE database
+ *   - Or ACCOUNTADMIN role
+ *   - Workloads executed with query tags for attribution
+ * 
+ * NOTE:
+ *   ACCOUNT_USAGE views have latency (up to 45 minutes for QUERY_HISTORY).
+ *   For real-time monitoring, use INFORMATION_SCHEMA views where available.
+ * 
+ * SEE ALSO:
+ *   - sql/04_monitoring/05_cost_analysis.sql (cost estimation)
+ *   - streamlit/monitoring/SFE_MONITORING_DASHBOARD.py (interactive dashboard)
+ *   - docs/02-MONITORING.md (monitoring guide)
+ * 
+ * CLEANUP:
+ *   See sql/99_cleanup/99_cleanup.sql
+ ******************************************************************************/
+
 -- Cost and Performance Monitoring Queries for Forecasting Workloads
 -- These queries help track warehouse utilization, identify performance bottlenecks, and attribute costs
 -- Reference: https://docs.snowflake.com/en/sql-reference/account-usage

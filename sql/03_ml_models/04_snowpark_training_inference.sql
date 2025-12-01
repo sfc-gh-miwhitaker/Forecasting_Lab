@@ -1,3 +1,35 @@
+/*******************************************************************************
+ * DEMO PROJECT: Forecasting Lab
+ * Script: Path 2 - Snowpark XGBoost Training and Inference
+ * 
+ * ⚠️  NOT FOR PRODUCTION USE - EXAMPLE IMPLEMENTATION ONLY
+ * 
+ * PURPOSE:
+ *   Creates Python stored procedures for custom XGBoost-based forecasting.
+ *   Demonstrates advanced feature engineering, model registry integration,
+ *   and scheduled task orchestration.
+ * 
+ * OBJECTS CREATED:
+ *   - SFE_TRAIN_GLOBAL_MODEL() (Stored Procedure - XGBoost training)
+ *   - SFE_FORECAST_GLOBAL(REGION) (Stored Procedure - Inference)
+ *   - FORECAST_OUTPUT_GLOBAL (Table - predictions with actuals)
+ *   - SFE_TASK_TRAIN_GLOBAL (Task - weekly training)
+ *   - SFE_TASK_FORECAST_GLOBAL (Task - daily inference)
+ * 
+ * QUERY TAGS:
+ *   - WORKLOAD:TRAINING|PATH:SNOWPARK_XGBOOST (training procedure)
+ *   - WORKLOAD:INFERENCE|PATH:SNOWPARK_XGBOOST (inference procedure)
+ * 
+ * PREREQUISITES:
+ *   - sql/01_setup/00_setup.sql completed
+ *   - sql/02_transformations/01_synthetic_data.sql completed
+ *   - python/snowpark_setup.py executed (Feature Store and Model Registry)
+ *   - SFE_SP_WH warehouse is Snowpark-Optimized
+ * 
+ * CLEANUP:
+ *   See sql/99_cleanup/99_cleanup.sql
+ ******************************************************************************/
+
 -- Snowpark stored procedures and tasks for Example forecasting (warehouse path)
 -- Requires Snowpark Python, pandas API on Snowflake, and xgboost packages available.
 

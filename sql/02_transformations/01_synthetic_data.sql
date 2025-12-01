@@ -1,3 +1,28 @@
+/*******************************************************************************
+ * DEMO PROJECT: Forecasting Lab
+ * Script: Data Generation - Synthetic Time-Series Data
+ * 
+ * ⚠️  NOT FOR PRODUCTION USE - EXAMPLE IMPLEMENTATION ONLY
+ * 
+ * PURPOSE:
+ *   Generates synthetic streaming data for 3 music tracks across 52 weeks
+ *   for both Global and US regions. Uses SQL GENERATOR function with random
+ *   distributions to create realistic time-series patterns.
+ * 
+ * OBJECTS CREATED:
+ *   - FORECAST_INPUT_GLOBAL (Table - 312 rows: 3 tracks × 52 weeks × 2 regions)
+ * 
+ * QUERY TAG:
+ *   WORKLOAD:DATA_PREP (for cost attribution)
+ * 
+ * PREREQUISITES:
+ *   - sql/01_setup/00_setup.sql completed
+ *   - SNOWFLAKE_EXAMPLE.FORECASTING schema exists
+ * 
+ * CLEANUP:
+ *   See sql/99_cleanup/99_cleanup.sql
+ ******************************************************************************/
+
 -- Generates synthetic time-series data for the forecasting model example.
 
 -- Set query tag for cost attribution and workload monitoring
